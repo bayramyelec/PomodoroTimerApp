@@ -7,17 +7,21 @@
 
 import UIKit
 
-class ViewController: UIViewController, CustomTabBarDelegate {
+class TabbarController: UIViewController, CustomTabBarDelegate {
     
     let tabbar = MainTabbarView()
     
-    private let VC1 = UINavigationController(rootViewController: MainVC())
+    private let VC1 = UINavigationController(rootViewController: HomeVC())
     private let VC2 = UINavigationController(rootViewController: ListVC())
     
     private var currentVC: UIViewController?
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        setup()
+    }
+    
+    private func setup(){
         view.backgroundColor = .back
         tabbar.translatesAutoresizingMaskIntoConstraints = false
         tabbar.delegate = self
@@ -57,6 +61,4 @@ class ViewController: UIViewController, CustomTabBarDelegate {
 }
 
 
-#Preview {
-    ViewController()
-}
+

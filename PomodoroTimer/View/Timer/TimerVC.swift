@@ -7,7 +7,7 @@
 
 import UIKit
 
-class MainVC: UIViewController {
+class TimerVC: UIViewController {
     
     var timer: Timer?
     var totalTime: Int = 60
@@ -227,6 +227,3 @@ class MainVC: UIViewController {
     
 }
 
-#Preview {
-    MainVC()
-}
