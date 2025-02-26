@@ -7,61 +7,50 @@
 
 import UIKit
 
-class ViewController: UIViewController {
+class ViewController: UIViewController, CustomTabBarDelegate {
     
-    private lazy var segmentedController: UISegmentedControl = {
-        let segmentedControl = UISegmentedControl(items: ["Focus", "Break"])
-        segmentedControl.selectedSegmentIndex = 0
-        segmentedControl.translatesAutoresizingMaskIntoConstraints = false
-        segmentedControl.selectedSegmentTintColor = .systemYellow.withAlphaComponent(0.6)
-        segmentedControl.setTitleTextAttributes([.foregroundColor: UIColor.black], for: .normal)
-        segmentedControl.addTarget(self, action: #selector(handleSegmentedControlValueChanged), for: .valueChanged)
-        return segmentedControl
-    }()
+    let tabbar = MainTabbarView()
     
-    let customView = CustomBackView(frame: .zero)
-    let customView2 = CustomBackView(frame: .zero)
+    private let VC1 = UINavigationController(rootViewController: MainVC())
+    private let VC2 = UINavigationController(rootViewController: ListVC())
+    
+    private var currentVC: UIViewController?
     
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .back
-        
-        view.addSubview(segmentedController)
-        
-        customView.translatesAutoresizingMaskIntoConstraints = false
-        customView.alpha = 1
-        view.addSubview(customView)
-        
-        customView2.translatesAutoresizingMaskIntoConstraints = false
-        customView2.alpha = 0
-        view.addSubview(customView2)
-        
+        tabbar.translatesAutoresizingMaskIntoConstraints = false
+        tabbar.delegate = self
+        view.addSubview(tabbar)
         NSLayoutConstraint.activate([
-            
-            segmentedController.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 10),
-            segmentedController.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            segmentedController.heightAnchor.constraint(equalToConstant: 30),
-            segmentedController.widthAnchor.constraint(equalToConstant: screenWidth * 0.5),
-            
-            customView.topAnchor.constraint(equalTo: segmentedController.bottomAnchor, constant: 10),
-            customView.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor),
-            customView.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor),
-            customView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor),
-            
-            customView2.topAnchor.constraint(equalTo: segmentedController.bottomAnchor, constant: 10),
-            customView2.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor),
-            customView2.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor),
-            customView2.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor)
+            tabbar.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -15),
+            tabbar.centerXAnchor.constraint(equalTo: view.centerXAnchor)
         ])
+        showVC(vc: VC1)
     }
     
-    @objc func handleSegmentedControlValueChanged(){
-        if segmentedController.selectedSegmentIndex == 0 {
-            customView.alpha = 1
-            customView2.alpha = 0
-        } else if segmentedController.selectedSegmentIndex == 1 {
-            customView.alpha = 0
-            customView2.alpha = 1
+    private func showVC(vc: UIViewController) {
+        currentVC?.view.removeFromSuperview()
+        currentVC?.removeFromParent()
+        
+        addChild(vc)
+        view.insertSubview(vc.view, belowSubview: tabbar)
+        NSLayoutConstraint.activate([
+            vc.view.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+            vc.view.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor),
+            vc.view.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            vc.view.trailingAnchor.constraint(equalTo: view.trailingAnchor)
+        ])
+        vc.didMove(toParent: self)
+        currentVC = vc
+    }
+    
+    func didSelectTabBarItem(at index: Int) {
+        switch index {
+        case 0: showVC(vc: VC1)
+        case 1: showVC(vc: VC2)
+        default:
+            break
         }
     }
     
