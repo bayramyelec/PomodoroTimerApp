@@ -8,13 +8,17 @@
 import UIKit
 
 class HomeVC: UIViewController {
+    
+    
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        view.backgroundColor = .back
+        setup()
     }
     
-
-    
+    private func setup(){
+        view.backgroundColor = .back
+        
+    }
 
 }

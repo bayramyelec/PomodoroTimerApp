@@ -38,6 +38,7 @@ class MainTabbarView: UIView {
         button.tintColor = .white
         button.tag = 0
         button.addTarget(self, action: #selector(createButtonAction), for: .touchUpInside)
+        button.translatesAutoresizingMaskIntoConstraints = false
         return button
     }()
     
@@ -53,6 +54,7 @@ class MainTabbarView: UIView {
         button.layer.borderWidth = 3
         button.layer.borderColor = UIColor.systemYellow.cgColor
         button.addTarget(self, action: #selector(plusButtonTapped), for: .touchUpInside)
+        button.translatesAutoresizingMaskIntoConstraints = false
         return button
     }()
     
@@ -65,7 +67,18 @@ class MainTabbarView: UIView {
         button.backgroundColor = .black.withAlphaComponent(0.2)
         button.layer.cornerRadius = 35
         button.alpha = 0
+        button.addTarget(self, action: #selector(focusButtonTapped), for: .touchUpInside)
+        button.translatesAutoresizingMaskIntoConstraints = false
         return button
+    }()
+    
+    private lazy var focusBackView: UIView = {
+        let view = UIView()
+        view.backgroundColor = .white
+        view.layer.cornerRadius = 35
+        view.alpha = 0
+        view.translatesAutoresizingMaskIntoConstraints = false
+        return view
     }()
     
     private lazy var breakButton: UIButton = {
@@ -77,16 +90,31 @@ class MainTabbarView: UIView {
         button.backgroundColor = .black.withAlphaComponent(0.2)
         button.alpha = 0
         button.layer.cornerRadius = 35
+        button.addTarget(self, action: #selector(breakButtonTapped), for: .touchUpInside)
+        button.translatesAutoresizingMaskIntoConstraints = false
         return button
+    }()
+    
+    private lazy var breakBackView: UIView = {
+        let view = UIView()
+        view.backgroundColor = .white
+        view.layer.cornerRadius = 35
+        view.alpha = 0
+        view.translatesAutoresizingMaskIntoConstraints = false
+        return view
     }()
     
     private lazy var listButton: UIButton = {
         let button = createButton(imageName: "list.bullet.rectangle.fill", tag: 1)
+        button.translatesAutoresizingMaskIntoConstraints = false
         return button
     }()
     
     private var isShowPlusButton: Bool = false
     private var selectedIndex: Int = 0
+    
+    private var isShowFocusButton: Bool = false
+    private var isShowBreakButton: Bool = false
     
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -98,7 +126,7 @@ class MainTabbarView: UIView {
     }
     
     override var intrinsicContentSize: CGSize {
-        return .init(width: screenWidth * 0.8, height: 60)
+        return .init(width: screenWidth * 0.8, height: 150)
     }
     
     private func setup(){
@@ -109,17 +137,17 @@ class MainTabbarView: UIView {
         addSubview(plusButton)
         addSubview(focusButton)
         addSubview(breakButton)
-        plusButton.translatesAutoresizingMaskIntoConstraints = false
-        focusButton.translatesAutoresizingMaskIntoConstraints = false
-        breakButton.translatesAutoresizingMaskIntoConstraints = false
+        
+        addSubview(focusBackView)
+        addSubview(breakBackView)
         
         NSLayoutConstraint.activate([
-            tabbarView.topAnchor.constraint(equalTo: topAnchor),
+            tabbarView.heightAnchor.constraint(equalToConstant: 60),
             tabbarView.bottomAnchor.constraint(equalTo: bottomAnchor),
             tabbarView.leftAnchor.constraint(equalTo: leftAnchor),
             tabbarView.rightAnchor.constraint(equalTo: rightAnchor),
             
-            stackView.topAnchor.constraint(equalTo: topAnchor),
+            stackView.heightAnchor.constraint(equalToConstant: 60),
             stackView.bottomAnchor.constraint(equalTo: bottomAnchor),
             stackView.leadingAnchor.constraint(equalTo: leadingAnchor),
             stackView.trailingAnchor.constraint(equalTo: trailingAnchor),
@@ -137,7 +165,17 @@ class MainTabbarView: UIView {
             breakButton.centerXAnchor.constraint(equalTo: centerXAnchor),
             breakButton.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -10),
             breakButton.widthAnchor.constraint(equalToConstant: 70),
-            breakButton.heightAnchor.constraint(equalToConstant: 70)
+            breakButton.heightAnchor.constraint(equalToConstant: 70),
+            
+            focusBackView.centerXAnchor.constraint(equalTo: centerXAnchor),
+            focusBackView.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -10),
+            focusBackView.widthAnchor.constraint(equalToConstant: 70),
+            focusBackView.heightAnchor.constraint(equalToConstant: 70),
+            
+            breakBackView.centerXAnchor.constraint(equalTo: centerXAnchor),
+            breakBackView.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -10),
+            breakBackView.widthAnchor.constraint(equalToConstant: 70),
+            breakBackView.heightAnchor.constraint(equalToConstant: 70),
         ])
     }
     
@@ -166,6 +204,28 @@ class MainTabbarView: UIView {
         plusButtonAnimation()
     }
     
+    @objc func focusButtonTapped(){
+        isShowFocusButton.toggle()
+        if isShowFocusButton {
+            self.focusBackView.alpha = 1
+            self.focusBackView.transform = CGAffineTransform(scaleX: 0.1, y: 0.1).concatenating(CGAffineTransform(translationX: 0, y: 100))
+            self.layoutIfNeeded()
+        } else {
+            self.focusBackView.alpha = 0
+            self.focusBackView.transform = .identity
+            self.layoutIfNeeded()
+        }
+    }
+    
+    @objc func breakButtonTapped(){
+        isShowBreakButton.toggle()
+        if isShowBreakButton {
+            
+        } else {
+            
+        }
+    }
+    
     private func plusButtonAnimation() {
         isShowPlusButton.toggle()
         if isShowPlusButton {
@@ -178,6 +238,8 @@ class MainTabbarView: UIView {
                 UIView.animate(withDuration: 1, delay: 0, usingSpringWithDamping: 0.5, initialSpringVelocity: 1.0, options: [], animations: {
                     self.focusButton.transform = CGAffineTransform(translationX: -50, y: -60)
                     self.focusButton.alpha = 1
+                    self.focusBackView.transform = CGAffineTransform(translationX: -50, y: -60)
+                    self.focusBackView.alpha = 0
                     self.layoutIfNeeded()
                 })
             }
@@ -185,10 +247,11 @@ class MainTabbarView: UIView {
                 UIView.animate(withDuration: 1, delay: 0, usingSpringWithDamping: 0.5, initialSpringVelocity: 1.0, options: [], animations: {
                     self.breakButton.transform = CGAffineTransform(translationX: 50, y: -60)
                     self.breakButton.alpha = 1
+                    self.breakBackView.transform = CGAffineTransform(translationX: 50, y: -60)
+                    self.breakBackView.alpha = 0
                     self.layoutIfNeeded()
                 })
             }
-            
         } else {
             UIView.animate(withDuration: 0.3) {
                 self.plusButton.transform = .identity
@@ -198,16 +261,17 @@ class MainTabbarView: UIView {
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
                 UIView.animate(withDuration: 1, delay: 0, usingSpringWithDamping: 0.5, initialSpringVelocity: 1.0, options: [], animations: {                    self.breakButton.transform = .identity
                     self.breakButton.alpha = 0
+                    self.breakBackView.transform = .identity
                     self.layoutIfNeeded()
                 })
             }
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
                 UIView.animate(withDuration: 1, delay: 0, usingSpringWithDamping: 0.5, initialSpringVelocity: 1.0, options: [], animations: {                    self.focusButton.transform = .identity
                     self.focusButton.alpha = 0
+                    self.focusBackView.transform = .identity
                     self.layoutIfNeeded()
                 })
             }
-            
         }
     }
 }

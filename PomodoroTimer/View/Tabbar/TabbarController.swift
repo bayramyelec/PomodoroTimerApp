@@ -27,7 +27,7 @@ class TabbarController: UIViewController, CustomTabBarDelegate {
         tabbar.delegate = self
         view.addSubview(tabbar)
         NSLayoutConstraint.activate([
-            tabbar.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -15),
+            tabbar.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor),
             tabbar.centerXAnchor.constraint(equalTo: view.centerXAnchor)
         ])
         showVC(vc: VC1)
@@ -36,8 +36,8 @@ class TabbarController: UIViewController, CustomTabBarDelegate {
     private func showVC(vc: UIViewController) {
         currentVC?.view.removeFromSuperview()
         currentVC?.removeFromParent()
-        
         addChild(vc)
+        vc.view.translatesAutoresizingMaskIntoConstraints = false
         view.insertSubview(vc.view, belowSubview: tabbar)
         NSLayoutConstraint.activate([
             vc.view.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
@@ -60,5 +60,6 @@ class TabbarController: UIViewController, CustomTabBarDelegate {
     
 }
 
-
-
+#Preview {
+    TabbarController()
+}

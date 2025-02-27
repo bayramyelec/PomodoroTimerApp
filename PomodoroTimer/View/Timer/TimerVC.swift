@@ -192,6 +192,10 @@ class TimerVC: UIViewController {
             timerLabel.text = String(format: "%02d:%02d:%02d", totalTime / 3600, (totalTime % 3600) / 60, totalTime % 60)
         } else {
             timer?.invalidate()
+            totalTime = Int(focusTimePicker.countDownDuration)
+            timerLabel.text = String(format: "%02d:%02d:%02d", totalTime / 3600, (totalTime % 3600) / 60, totalTime % 60)
+            startButton.setImage(UIImage(systemName: "play.fill"), for: .normal)
+            timer = nil
         }
     }
     
@@ -227,3 +231,6 @@ class TimerVC: UIViewController {
     
 }
 
+#Preview {
+    TimerVC()
+}
