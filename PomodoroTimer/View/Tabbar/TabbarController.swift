@@ -7,7 +7,7 @@
 
 import UIKit
 
-class TabbarController: UIViewController, CustomTabBarDelegate {
+class TabbarController: UIViewController, CustomTabBarDelegate, ShowPlusButtonDelegate {
     
     let tabbar = MainTabbarView()
     
@@ -15,6 +15,84 @@ class TabbarController: UIViewController, CustomTabBarDelegate {
     private let VC2 = UINavigationController(rootViewController: ListVC())
     
     private var currentVC: UIViewController?
+    
+    private lazy var focusButton: UIButton = {
+        let button = UIButton()
+        let config = UIImage.SymbolConfiguration(pointSize: 20, weight: .bold)
+        let image = UIImage(systemName: "timer", withConfiguration: config)
+        button.setImage(image, for: .normal)
+        button.tintColor = .systemYellow
+        button.backgroundColor = .black.withAlphaComponent(0.2)
+        button.layer.cornerRadius = 35
+        button.addTarget(self, action: #selector(focusButtonTapped), for: .touchUpInside)
+        button.translatesAutoresizingMaskIntoConstraints = false
+        button.alpha = 0
+        return button
+    }()
+    
+    private lazy var breakButton: UIButton = {
+        let button = UIButton()
+        let config = UIImage.SymbolConfiguration(pointSize: 20, weight: .bold)
+        let image = UIImage(systemName: "cup.and.saucer.fill", withConfiguration: config)
+        button.setImage(image, for: .normal)
+        button.tintColor = .systemYellow
+        button.backgroundColor = .black.withAlphaComponent(0.2)
+        button.layer.cornerRadius = 35
+        button.addTarget(self, action: #selector(breakButtonTapped), for: .touchUpInside)
+        button.translatesAutoresizingMaskIntoConstraints = false
+        button.alpha = 0
+        return button
+    }()
+    
+    private lazy var focusTimePicker: UIDatePicker = {
+        let picker = UIDatePicker()
+        picker.datePickerMode = .countDownTimer
+        picker.translatesAutoresizingMaskIntoConstraints = false
+        picker.preferredDatePickerStyle = .wheels
+        //picker.addTarget(self, action: #selector(focusTimePickerValueChanged), for: .valueChanged)
+        picker.alpha = 0
+        picker.backgroundColor = .systemBackground
+        picker.layer.cornerRadius = 20
+        picker.clipsToBounds = true
+        return picker
+    }()
+    
+    private lazy var breakTimePicker: UIDatePicker = {
+        let picker = UIDatePicker()
+        picker.datePickerMode = .countDownTimer
+        picker.translatesAutoresizingMaskIntoConstraints = false
+        picker.preferredDatePickerStyle = .wheels
+        //picker.addTarget(self, action: #selector(focusTimePickerValueChanged), for: .valueChanged)
+        picker.alpha = 0
+        picker.backgroundColor = .systemBackground
+        picker.layer.cornerRadius = 20
+        picker.clipsToBounds = true
+        return picker
+    }()
+    
+    private lazy var focusTimeLabel: UILabel = {
+        let label = UILabel()
+        label.textColor = .label
+        label.font = .systemFont(ofSize: 15, weight: .bold)
+        label.textAlignment = .center
+        label.translatesAutoresizingMaskIntoConstraints = false
+        label.text = "Focus Time"
+        return label
+    }()
+    
+    private lazy var breakTimeLabel: UILabel = {
+        let label = UILabel()
+        label.textColor = .label
+        label.font = .systemFont(ofSize: 15, weight: .bold)
+        label.textAlignment = .center
+        label.translatesAutoresizingMaskIntoConstraints = false
+        label.text = "Break Time"
+        return label
+    }()
+    
+    private var isShowPlusButton: Bool = false
+    private var isShowFocusButton: Bool = false
+    private var isShowBreakButton: Bool = false
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -25,10 +103,46 @@ class TabbarController: UIViewController, CustomTabBarDelegate {
         view.backgroundColor = .back
         tabbar.translatesAutoresizingMaskIntoConstraints = false
         tabbar.delegate = self
+        tabbar.plusButtonDelegate = self
         view.addSubview(tabbar)
+        view.addSubview(focusButton)
+        view.addSubview(breakButton)
+        view.addSubview(focusTimePicker)
+        view.addSubview(breakTimePicker)
+        
+        focusTimePicker.addSubview(focusTimeLabel)
+        breakTimePicker.addSubview(breakTimeLabel)
+        
         NSLayoutConstraint.activate([
             tabbar.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor),
-            tabbar.centerXAnchor.constraint(equalTo: view.centerXAnchor)
+            tabbar.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            
+            focusButton.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            focusButton.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -10),
+            focusButton.widthAnchor.constraint(equalToConstant: 70),
+            focusButton.heightAnchor.constraint(equalToConstant: 70),
+            
+            breakButton.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            breakButton.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -10),
+            breakButton.widthAnchor.constraint(equalToConstant: 70),
+            breakButton.heightAnchor.constraint(equalToConstant: 70),
+            
+            focusTimePicker.rightAnchor.constraint(equalTo: view.leftAnchor),
+            focusTimePicker.centerYAnchor.constraint(equalTo: view.centerYAnchor),
+            focusTimePicker.widthAnchor.constraint(equalToConstant: screenWidth * 0.5),
+            focusTimePicker.heightAnchor.constraint(equalToConstant: screenWidth * 0.3),
+            
+            breakTimePicker.leftAnchor.constraint(equalTo: view.rightAnchor),
+            breakTimePicker.centerYAnchor.constraint(equalTo: view.centerYAnchor),
+            breakTimePicker.widthAnchor.constraint(equalToConstant: screenWidth * 0.5),
+            breakTimePicker.heightAnchor.constraint(equalToConstant: screenWidth * 0.3),
+            
+            focusTimeLabel.topAnchor.constraint(equalTo: focusTimePicker.topAnchor, constant: 5),
+            focusTimeLabel.leftAnchor.constraint(equalTo: focusTimePicker.leftAnchor, constant: 10),
+            
+            breakTimeLabel.topAnchor.constraint(equalTo: breakTimePicker.topAnchor, constant: 5),
+            breakTimeLabel.leftAnchor.constraint(equalTo: breakTimePicker.leftAnchor, constant: 10)
+            
         ])
         showVC(vc: VC1)
     }
@@ -55,6 +169,95 @@ class TabbarController: UIViewController, CustomTabBarDelegate {
         case 1: showVC(vc: VC2)
         default:
             break
+        }
+    }
+    
+    @objc func focusButtonTapped(){
+        isShowFocusButton.toggle()
+        isShowBreakButton = false
+        if isShowFocusButton {
+            UIView.animate(withDuration: 1, delay: 0, usingSpringWithDamping: 0.5, initialSpringVelocity: 1.0, options: []) {
+                self.focusTimePicker.transform = CGAffineTransform(translationX: self.screenWidth * 0.75, y: 0)
+                self.focusTimePicker.alpha = 1
+                self.view.layoutIfNeeded()
+            }
+            UIView.animate(withDuration: 0.3) {
+                self.breakTimePicker.transform = .identity
+                self.breakTimePicker.alpha = 0
+                self.view.layoutIfNeeded()
+            }
+        } else {
+            UIView.animate(withDuration: 0.3) {
+                self.focusTimePicker.transform = .identity
+                self.focusTimePicker.alpha = 0
+                self.view.layoutIfNeeded()
+            }
+        }
+    }
+    
+    @objc func breakButtonTapped(){
+        isShowBreakButton.toggle()
+        isShowFocusButton = false
+        if isShowBreakButton {
+            UIView.animate(withDuration: 1, delay: 0, usingSpringWithDamping: 0.5, initialSpringVelocity: 1.0, options: []) {
+                self.breakTimePicker.transform = CGAffineTransform(translationX: -self.screenWidth * 0.75, y: 0)
+                self.breakTimePicker.alpha = 1
+                self.view.layoutIfNeeded()
+            }
+            UIView.animate(withDuration: 0.3) {
+                self.focusTimePicker.transform = .identity
+                self.focusTimePicker.alpha = 0
+                self.view.layoutIfNeeded()
+            }
+        } else {
+            UIView.animate(withDuration: 0.3) {
+                self.breakTimePicker.transform = .identity
+                self.breakTimePicker.alpha = 0
+                self.view.layoutIfNeeded()
+            }
+        }
+    }
+    
+    func showPlusButtonAnimate() {
+        isShowPlusButton.toggle()
+        isShowFocusButton = false
+        isShowBreakButton = false
+        if isShowPlusButton {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+                UIView.animate(withDuration: 1, delay: 0, usingSpringWithDamping: 0.5, initialSpringVelocity: 1.0, options: [], animations: {
+                    self.focusButton.transform = CGAffineTransform(translationX: -50, y: -60)
+                    self.focusButton.alpha = 1
+                    self.view.layoutIfNeeded()
+                })
+            }
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                UIView.animate(withDuration: 1, delay: 0, usingSpringWithDamping: 0.5, initialSpringVelocity: 1.0, options: [], animations: {
+                    self.breakButton.transform = CGAffineTransform(translationX: 50, y: -60)
+                    self.breakButton.alpha = 1
+                    self.view.layoutIfNeeded()
+                })
+            }
+        } else {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+                UIView.animate(withDuration: 0.2) {
+                    self.breakTimePicker.transform = .identity
+                    self.focusTimePicker.transform = .identity
+                }
+            }
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+                UIView.animate(withDuration: 1, delay: 0, usingSpringWithDamping: 0.5, initialSpringVelocity: 1.0, options: [], animations: {
+                    self.breakButton.transform = .identity
+                    self.breakButton.alpha = 0
+                    self.view.layoutIfNeeded()
+                })
+            }
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
+                UIView.animate(withDuration: 1, delay: 0, usingSpringWithDamping: 0.5, initialSpringVelocity: 1.0, options: [], animations: {
+                    self.focusButton.transform = .identity
+                    self.focusButton.alpha = 0
+                    self.view.layoutIfNeeded()
+                })
+            }
         }
     }
     
