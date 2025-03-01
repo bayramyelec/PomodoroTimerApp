@@ -270,6 +270,7 @@ class TabbarController: UIViewController, CustomTabBarDelegate, ShowPlusButtonDe
     @objc func focusTimePickerValueChanged(){
         let totalTime = Int(focusTimePicker.countDownDuration)
         viewModel.timerModel.totalTime = totalTime
+        viewModel.resetTimer(time: viewModel.timerModel.totalTime)
         VC1.focusTimePicker.countDownDuration = TimeInterval(viewModel.timerModel.totalTime)
         VC1.timerLabel.text = String(format: "%02d:%02d:%02d", viewModel.timerModel.totalTime / 3600, (viewModel.timerModel.totalTime % 3600) / 60, viewModel.timerModel.totalTime % 60)
     }
