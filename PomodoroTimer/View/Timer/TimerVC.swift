@@ -9,8 +9,7 @@ import UIKit
 
 class TimerVC: UIViewController {
     
-    var timer: Timer?
-    var totalTime: Int = 60
+    var viewModel = TimerViewModel()
     
     private var segmentedController: UISegmentedControl = {
         let segmentedControl = UISegmentedControl(items: ["Focus", "Break"])
@@ -36,7 +35,7 @@ class TimerVC: UIViewController {
         label.textAlignment = .center
         label.font = UIFont(name: "DS-Digital", size: screenWidth * 0.2)
         label.translatesAutoresizingMaskIntoConstraints = false
-        label.text = String(format: "%02d:%02d:%02d", totalTime / 3600, (totalTime % 3600) / 60, totalTime % 60)
+        label.text = String(format: "%02d:%02d:%02d", viewModel.timerModel.totalTime / 3600, (viewModel.timerModel.totalTime % 3600) / 60, viewModel.timerModel.totalTime % 60)
         return label
     }()
     
@@ -101,6 +100,9 @@ class TimerVC: UIViewController {
         super.viewDidLoad()
         view.backgroundColor = .white
         setupUI()
+        viewModel.onTimerUpdate = { [weak self] totalTime in
+            self?.timerLabel.text = String(format: "%02d:%02d:%02d", totalTime / 3600, (totalTime % 3600) / 60, totalTime % 60)
+        }
     }
     
     func setupUI() {
@@ -155,6 +157,7 @@ class TimerVC: UIViewController {
             focusTimePicker.bottomAnchor.constraint(equalTo: timePickerView.bottomAnchor),
             
         ])
+        
     }
     
     @objc func startButtonTapped() {
@@ -164,39 +167,18 @@ class TimerVC: UIViewController {
         
         if isShowStopButton {
             startButton.setImage(UIImage(systemName: "pause.fill"), for: .normal)
-            if timer == nil {
-                totalTime = Int(focusTimePicker.countDownDuration)
-                timer = Timer.scheduledTimer(timeInterval: 1.0, target: self, selector: #selector (updateTimer), userInfo: nil, repeats: true)
-            } else {
-                timer = Timer.scheduledTimer(timeInterval: 1.0, target: self, selector: #selector (updateTimer), userInfo: nil, repeats: true)
-            }
+            viewModel.startTimer(totalTime: viewModel.timerModel.totalTime)
         } else {
             startButton.setImage(UIImage(systemName: "play.fill"), for: .normal)
-            timer?.invalidate()
+            viewModel.stopTimer()
         }
     }
     
     @objc func resetButtonTapped() {
         isFocusTimePickerShowing = false
         timePickerShowingAnimation()
-        timer?.invalidate()
-        totalTime = Int(focusTimePicker.countDownDuration)
-        timerLabel.text = String(format: "%02d:%02d:%02d", totalTime / 3600, (totalTime % 3600) / 60, totalTime % 60)
+        viewModel.resetTimer(time: Int(focusTimePicker.countDownDuration))
         startButton.setImage(UIImage(systemName: "play.fill"), for: .normal)
-        timer = nil
-    }
-    
-    @objc func updateTimer(){
-        if totalTime > 0 {
-            totalTime -= 1
-            timerLabel.text = String(format: "%02d:%02d:%02d", totalTime / 3600, (totalTime % 3600) / 60, totalTime % 60)
-        } else {
-            timer?.invalidate()
-            totalTime = Int(focusTimePicker.countDownDuration)
-            timerLabel.text = String(format: "%02d:%02d:%02d", totalTime / 3600, (totalTime % 3600) / 60, totalTime % 60)
-            startButton.setImage(UIImage(systemName: "play.fill"), for: .normal)
-            timer = nil
-        }
     }
     
     @objc func timePickerButtonTapped(){

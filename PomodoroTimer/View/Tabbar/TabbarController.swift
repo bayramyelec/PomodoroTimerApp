@@ -11,7 +11,7 @@ class TabbarController: UIViewController, CustomTabBarDelegate, ShowPlusButtonDe
     
     let tabbar = MainTabbarView()
     
-    private let VC1 = UINavigationController(rootViewController: HomeVC())
+    private let VC1 = UINavigationController(rootViewController: TimerVC())
     private let VC2 = UINavigationController(rootViewController: ListVC())
     
     private var currentVC: UIViewController?
@@ -114,7 +114,7 @@ class TabbarController: UIViewController, CustomTabBarDelegate, ShowPlusButtonDe
         breakTimePicker.addSubview(breakTimeLabel)
         
         NSLayoutConstraint.activate([
-            tabbar.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor),
+            tabbar.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -10),
             tabbar.centerXAnchor.constraint(equalTo: view.centerXAnchor),
             
             focusButton.centerXAnchor.constraint(equalTo: view.centerXAnchor),
@@ -128,12 +128,12 @@ class TabbarController: UIViewController, CustomTabBarDelegate, ShowPlusButtonDe
             breakButton.heightAnchor.constraint(equalToConstant: 70),
             
             focusTimePicker.rightAnchor.constraint(equalTo: view.leftAnchor),
-            focusTimePicker.centerYAnchor.constraint(equalTo: view.centerYAnchor),
+            focusTimePicker.bottomAnchor.constraint(equalTo: tabbar.topAnchor, constant: -90),
             focusTimePicker.widthAnchor.constraint(equalToConstant: screenWidth * 0.5),
             focusTimePicker.heightAnchor.constraint(equalToConstant: screenWidth * 0.3),
             
             breakTimePicker.leftAnchor.constraint(equalTo: view.rightAnchor),
-            breakTimePicker.centerYAnchor.constraint(equalTo: view.centerYAnchor),
+            breakTimePicker.bottomAnchor.constraint(equalTo: tabbar.topAnchor, constant: -90),
             breakTimePicker.widthAnchor.constraint(equalToConstant: screenWidth * 0.5),
             breakTimePicker.heightAnchor.constraint(equalToConstant: screenWidth * 0.3),
             
@@ -225,14 +225,14 @@ class TabbarController: UIViewController, CustomTabBarDelegate, ShowPlusButtonDe
         if isShowPlusButton {
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
                 UIView.animate(withDuration: 1, delay: 0, usingSpringWithDamping: 0.5, initialSpringVelocity: 1.0, options: [], animations: {
-                    self.focusButton.transform = CGAffineTransform(translationX: -50, y: -60)
+                    self.focusButton.transform = CGAffineTransform(translationX: -50, y: -65)
                     self.focusButton.alpha = 1
                     self.view.layoutIfNeeded()
                 })
             }
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
                 UIView.animate(withDuration: 1, delay: 0, usingSpringWithDamping: 0.5, initialSpringVelocity: 1.0, options: [], animations: {
-                    self.breakButton.transform = CGAffineTransform(translationX: 50, y: -60)
+                    self.breakButton.transform = CGAffineTransform(translationX: 50, y: -65)
                     self.breakButton.alpha = 1
                     self.view.layoutIfNeeded()
                 })
