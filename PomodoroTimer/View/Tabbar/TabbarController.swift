@@ -10,8 +10,12 @@ import UIKit
 class TabbarController: UIViewController, CustomTabBarDelegate, ShowPlusButtonDelegate {
     
     let tabbar = MainTabbarView()
+    var viewModel = TimerViewModel()
     
-    private let VC1 = UINavigationController(rootViewController: TimerVC())
+    private let VC1: TimerVC = {
+        let timerVC = TimerVC()
+        return timerVC
+    }()
     private let VC2 = UINavigationController(rootViewController: ListVC())
     
     private var currentVC: UIViewController?
@@ -49,7 +53,7 @@ class TabbarController: UIViewController, CustomTabBarDelegate, ShowPlusButtonDe
         picker.datePickerMode = .countDownTimer
         picker.translatesAutoresizingMaskIntoConstraints = false
         picker.preferredDatePickerStyle = .wheels
-        //picker.addTarget(self, action: #selector(focusTimePickerValueChanged), for: .valueChanged)
+        picker.addTarget(self, action: #selector(focusTimePickerValueChanged), for: .valueChanged)
         picker.alpha = 0
         picker.backgroundColor = .systemBackground
         picker.layer.cornerRadius = 20
@@ -62,7 +66,7 @@ class TabbarController: UIViewController, CustomTabBarDelegate, ShowPlusButtonDe
         picker.datePickerMode = .countDownTimer
         picker.translatesAutoresizingMaskIntoConstraints = false
         picker.preferredDatePickerStyle = .wheels
-        //picker.addTarget(self, action: #selector(focusTimePickerValueChanged), for: .valueChanged)
+        picker.addTarget(self, action: #selector(breakTimePickerValueChanged), for: .valueChanged)
         picker.alpha = 0
         picker.backgroundColor = .systemBackground
         picker.layer.cornerRadius = 20
@@ -97,6 +101,7 @@ class TabbarController: UIViewController, CustomTabBarDelegate, ShowPlusButtonDe
     override func viewDidLoad() {
         super.viewDidLoad()
         setup()
+        setupVC1()
     }
     
     private func setup(){
@@ -104,6 +109,7 @@ class TabbarController: UIViewController, CustomTabBarDelegate, ShowPlusButtonDe
         tabbar.translatesAutoresizingMaskIntoConstraints = false
         tabbar.delegate = self
         tabbar.plusButtonDelegate = self
+        
         view.addSubview(tabbar)
         view.addSubview(focusButton)
         view.addSubview(breakButton)
@@ -258,6 +264,25 @@ class TabbarController: UIViewController, CustomTabBarDelegate, ShowPlusButtonDe
                     self.view.layoutIfNeeded()
                 })
             }
+        }
+    }
+    
+    @objc func focusTimePickerValueChanged(){
+        let totalTime = Int(focusTimePicker.countDownDuration)
+        viewModel.timerModel.totalTime = totalTime
+        VC1.focusTimePicker.countDownDuration = TimeInterval(viewModel.timerModel.totalTime)
+        VC1.timerLabel.text = String(format: "%02d:%02d:%02d", viewModel.timerModel.totalTime / 3600, (viewModel.timerModel.totalTime % 3600) / 60, viewModel.timerModel.totalTime % 60)
+    }
+    
+    @objc func breakTimePickerValueChanged(){
+        
+    }
+    
+    private func setupVC1(){
+        VC1.focusTimePicker = self.focusTimePicker
+        VC1.viewModel = viewModel
+        viewModel.onTimerUpdate = { [weak self] totalTime in
+            self?.VC1.timerLabel.text = String(format: "%02d:%02d:%02d", totalTime / 3600, (totalTime % 3600) / 60, totalTime % 60)
         }
     }
     
