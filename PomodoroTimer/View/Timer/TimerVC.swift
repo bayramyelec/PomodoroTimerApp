@@ -167,7 +167,8 @@ class TimerVC: UIViewController {
         
         if isShowStopButton {
             startButton.setImage(UIImage(systemName: "pause.fill"), for: .normal)
-            viewModel.startTimer(totalTime: viewModel.timerModel.totalTime)
+            let selectedTime = Int(focusTimePicker.countDownDuration)
+            viewModel.startTimer(totalTime: selectedTime)
         } else {
             startButton.setImage(UIImage(systemName: "play.fill"), for: .normal)
             viewModel.stopTimer()
@@ -189,6 +190,7 @@ class TimerVC: UIViewController {
     @objc func timePickerValueChanged() {
         let remainingTime = Int(focusTimePicker.countDownDuration)
         timerLabel.text = String(format: "%02d:%02d:%02d", remainingTime / 3600, (remainingTime % 3600) / 60, remainingTime % 60)
+        viewModel.resetTimer(time: remainingTime)
     }
     
     private func timePickerShowingAnimation() {
