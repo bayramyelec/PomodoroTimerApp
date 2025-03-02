@@ -10,15 +10,16 @@ import UIKit
 class TimerVC: UIViewController {
     
     var viewModel = TimerViewModel()
-        
+    
     var focusTimePicker: UIDatePicker!
-        
-    private var segmentedController: UISegmentedControl = {
+    
+    private lazy var segmentedController: UISegmentedControl = {
         let segmentedControl = UISegmentedControl(items: ["Focus", "Break"])
         segmentedControl.selectedSegmentIndex = 0
         segmentedControl.translatesAutoresizingMaskIntoConstraints = false
         segmentedControl.selectedSegmentTintColor = .systemYellow.withAlphaComponent(0.6)
         segmentedControl.setTitleTextAttributes([.foregroundColor: UIColor.black], for: .normal)
+        segmentedControl.addTarget(self, action: #selector(segmentedControlValueChanged), for: .valueChanged)
         return segmentedControl
     }()
     
@@ -84,11 +85,11 @@ class TimerVC: UIViewController {
         view.addSubview(headerBackView)
         headerBackView.addSubview(timerLabel)
         view.addSubview(timerButtonStackView)
-        [startButton, resetButton].forEach { timerButtonStackView.addArrangedSubview($0) }
+        [resetButton, startButton].forEach { timerButtonStackView.addArrangedSubview($0) }
         
         
         NSLayoutConstraint.activate([
-            segmentedController.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 10),
+            segmentedController.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 20),
             segmentedController.centerXAnchor.constraint(equalTo: view.centerXAnchor),
             segmentedController.heightAnchor.constraint(equalToConstant: 30),
             segmentedController.widthAnchor.constraint(equalToConstant: screenWidth * 0.5),
@@ -127,8 +128,17 @@ class TimerVC: UIViewController {
     }
     
     @objc func resetButtonTapped() {
+        isShowStopButton = false
         viewModel.resetTimer(time: Int(focusTimePicker.countDownDuration))
         startButton.setImage(UIImage(systemName: "play.fill"), for: .normal)
+    }
+    
+    @objc func segmentedControlValueChanged(){
+        if segmentedController.selectedSegmentIndex == 0 {
+            
+        } else if segmentedController.selectedSegmentIndex == 1 {
+            
+        }
     }
     
 }
