@@ -178,11 +178,13 @@ class TimerVC: UIViewController {
             self.breakTimerLabel.alpha = 0
             self.viewModel.resetTimer(time: Int(focusTimePicker.countDownDuration))
             self.startButton.setImage(UIImage(systemName: "play.fill"), for: .normal)
+            self.isShowStopButton = false
         } else if segmentedController.selectedSegmentIndex == 1 {
             self.focusTimerLabel.alpha = 0
             self.breakTimerLabel.alpha = 1
             self.viewModel.resetTimer(time: Int(breakTimePicker.countDownDuration))
             self.startButton.setImage(UIImage(systemName: "play.fill"), for: .normal)
+            self.isShowStopButton = false
         }
     }
     

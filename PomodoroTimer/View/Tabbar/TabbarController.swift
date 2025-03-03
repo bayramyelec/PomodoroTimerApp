@@ -275,6 +275,7 @@ class TabbarController: UIViewController, CustomTabBarDelegate, ShowPlusButtonDe
         VC1.isShowStopButton = false
         VC1.focusTimePicker.countDownDuration = TimeInterval(viewModel.timerModel.totalTime)
         VC1.focusTimerLabel.text = String(format: "%02d:%02d:%02d", viewModel.timerModel.totalTime / 3600, (viewModel.timerModel.totalTime % 3600) / 60, viewModel.timerModel.totalTime % 60)
+        VC1.segmentedController.selectedSegmentIndex = 0
     }
     
     @objc func breakTimePickerValueChanged(_ sender: UIDatePicker){
@@ -285,6 +286,7 @@ class TabbarController: UIViewController, CustomTabBarDelegate, ShowPlusButtonDe
         VC1.isShowStopButton = false
         VC1.breakTimePicker.countDownDuration = TimeInterval(viewModel.timerModel.totalTime)
         VC1.breakTimerLabel.text = String(format: "%02d:%02d:%02d", viewModel.timerModel.totalTime / 3600, (viewModel.timerModel.totalTime % 3600) / 60, viewModel.timerModel.totalTime % 60)
+        VC1.segmentedController.selectedSegmentIndex = 1
     }
     
     private func setupVC1(){
