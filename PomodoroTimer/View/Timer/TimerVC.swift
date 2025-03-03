@@ -12,8 +12,9 @@ class TimerVC: UIViewController {
     var viewModel = TimerViewModel()
     
     var focusTimePicker: UIDatePicker!
+    var breakTimePicker: UIDatePicker!
     
-    private lazy var segmentedController: UISegmentedControl = {
+    lazy var segmentedController: UISegmentedControl = {
         let segmentedControl = UISegmentedControl(items: ["Focus", "Break"])
         segmentedControl.selectedSegmentIndex = 0
         segmentedControl.translatesAutoresizingMaskIntoConstraints = false
@@ -32,13 +33,25 @@ class TimerVC: UIViewController {
         return view
     }()
     
-    lazy var timerLabel: UILabel = {
+    lazy var focusTimerLabel: UILabel = {
         let label = UILabel()
         label.textColor = .systemYellow.withAlphaComponent(0.5)
         label.textAlignment = .center
         label.font = UIFont(name: "DS-Digital", size: screenWidth * 0.2)
         label.translatesAutoresizingMaskIntoConstraints = false
         label.text = String(format: "%02d:%02d:%02d", viewModel.timerModel.totalTime / 3600, (viewModel.timerModel.totalTime % 3600) / 60, viewModel.timerModel.totalTime % 60)
+        label.alpha = 1
+        return label
+    }()
+    
+    lazy var breakTimerLabel: UILabel = {
+        let label = UILabel()
+        label.textColor = .systemYellow.withAlphaComponent(0.5)
+        label.textAlignment = .center
+        label.font = UIFont(name: "DS-Digital", size: screenWidth * 0.2)
+        label.translatesAutoresizingMaskIntoConstraints = false
+        label.text = String(format: "%02d:%02d:%02d", viewModel.timerModel.totalTime / 3600, (viewModel.timerModel.totalTime % 3600) / 60, viewModel.timerModel.totalTime % 60)
+        label.alpha = 0
         return label
     }()
     
@@ -51,7 +64,7 @@ class TimerVC: UIViewController {
         return stackView
     }()
     
-    private lazy var startButton: UIButton = {
+    lazy var startButton: UIButton = {
         let button = UIButton(type: .roundedRect)
         button.backgroundColor = .black
         button.layer.cornerRadius = 15
@@ -75,7 +88,11 @@ class TimerVC: UIViewController {
         view.backgroundColor = .white
         setupUI()
         viewModel.onTimerUpdate = { [weak self] totalTime in
-            self?.timerLabel.text = String(format: "%02d:%02d:%02d", totalTime / 3600, (totalTime % 3600) / 60, totalTime % 60)
+            if self?.segmentedController.selectedSegmentIndex == 0 {
+                self?.focusTimerLabel.text = String(format: "%02d:%02d:%02d", totalTime / 3600, (totalTime % 3600) / 60, totalTime % 60)
+            } else if self?.segmentedController.selectedSegmentIndex == 1 {
+                self?.breakTimerLabel.text = String(format: "%02d:%02d:%02d", totalTime / 3600, (totalTime % 3600) / 60, totalTime % 60)
+            }
         }
     }
     
@@ -83,7 +100,8 @@ class TimerVC: UIViewController {
         view.backgroundColor = UIColor.back
         view.addSubview(segmentedController)
         view.addSubview(headerBackView)
-        headerBackView.addSubview(timerLabel)
+        headerBackView.addSubview(focusTimerLabel)
+        headerBackView.addSubview(breakTimerLabel)
         view.addSubview(timerButtonStackView)
         [resetButton, startButton].forEach { timerButtonStackView.addArrangedSubview($0) }
         
@@ -99,8 +117,11 @@ class TimerVC: UIViewController {
             headerBackView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -30),
             headerBackView.heightAnchor.constraint(equalToConstant: screenWidth  * 0.5),
             
-            timerLabel.centerXAnchor.constraint(equalTo: headerBackView.centerXAnchor),
-            timerLabel.centerYAnchor.constraint(equalTo: headerBackView.centerYAnchor),
+            focusTimerLabel.centerXAnchor.constraint(equalTo: headerBackView.centerXAnchor),
+            focusTimerLabel.centerYAnchor.constraint(equalTo: headerBackView.centerYAnchor),
+            
+            breakTimerLabel.centerXAnchor.constraint(equalTo: headerBackView.centerXAnchor),
+            breakTimerLabel.centerYAnchor.constraint(equalTo: headerBackView.centerYAnchor),
             
             timerButtonStackView.topAnchor.constraint(equalTo: headerBackView.bottomAnchor, constant: 30),
             timerButtonStackView.centerXAnchor.constraint(equalTo: view.centerXAnchor),
@@ -117,27 +138,51 @@ class TimerVC: UIViewController {
     @objc func startButtonTapped() {
         isShowStopButton.toggle()
         
-        if isShowStopButton {
-            startButton.setImage(UIImage(systemName: "pause.fill"), for: .normal)
-            let selectedTime = Int(focusTimePicker.countDownDuration)
-            viewModel.startTimer(totalTime: selectedTime)
-        } else {
-            startButton.setImage(UIImage(systemName: "play.fill"), for: .normal)
-            viewModel.stopTimer()
+        if segmentedController.selectedSegmentIndex == 0 {
+            if isShowStopButton {
+                startButton.setImage(UIImage(systemName: "pause.fill"), for: .normal)
+                let selectedTime = Int(focusTimePicker.countDownDuration)
+                viewModel.startTimer(totalTime: selectedTime)
+            } else {
+                startButton.setImage(UIImage(systemName: "play.fill"), for: .normal)
+                viewModel.stopTimer()
+            }
+        } else if segmentedController.selectedSegmentIndex == 1 {
+            if isShowStopButton {
+                startButton.setImage(UIImage(systemName: "pause.fill"), for: .normal)
+                let selectedTime = Int(breakTimePicker.countDownDuration)
+                viewModel.startTimer(totalTime: selectedTime)
+            } else {
+                startButton.setImage(UIImage(systemName: "play.fill"), for: .normal)
+                viewModel.stopTimer()
+            }
         }
     }
     
     @objc func resetButtonTapped() {
-        isShowStopButton = false
-        viewModel.resetTimer(time: Int(focusTimePicker.countDownDuration))
-        startButton.setImage(UIImage(systemName: "play.fill"), for: .normal)
+        if segmentedController.selectedSegmentIndex == 0 {
+            isShowStopButton = false
+            viewModel.resetTimer(time: Int(focusTimePicker.countDownDuration))
+            startButton.setImage(UIImage(systemName: "play.fill"), for: .normal)
+        } else if segmentedController.selectedSegmentIndex == 1 {
+            isShowStopButton = false
+            viewModel.resetTimer(time: Int(breakTimePicker.countDownDuration))
+            startButton.setImage(UIImage(systemName: "play.fill"), for: .normal)
+        }
+       
     }
     
     @objc func segmentedControlValueChanged(){
         if segmentedController.selectedSegmentIndex == 0 {
-            
+            self.focusTimerLabel.alpha = 1
+            self.breakTimerLabel.alpha = 0
+            self.viewModel.resetTimer(time: Int(focusTimePicker.countDownDuration))
+            self.startButton.setImage(UIImage(systemName: "play.fill"), for: .normal)
         } else if segmentedController.selectedSegmentIndex == 1 {
-            
+            self.focusTimerLabel.alpha = 0
+            self.breakTimerLabel.alpha = 1
+            self.viewModel.resetTimer(time: Int(breakTimePicker.countDownDuration))
+            self.startButton.setImage(UIImage(systemName: "play.fill"), for: .normal)
         }
     }
     

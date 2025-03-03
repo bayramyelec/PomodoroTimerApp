@@ -8,6 +8,20 @@
 import Foundation
 
 struct TimerModel {
-    var totalTime: Int
+    var focustime: Int
+    var breakTime: Int
+    var isBreak: Bool
+    var totalTime: Int {
+        get {
+            return isBreak ? breakTime : focustime
+        }
+        set {
+            if isBreak {
+                breakTime = newValue
+            } else {
+                focustime = newValue
+            }
+        }
+    }
     var isRunning: Bool
 }

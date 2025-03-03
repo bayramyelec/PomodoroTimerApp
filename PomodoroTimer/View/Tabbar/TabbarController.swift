@@ -267,26 +267,39 @@ class TabbarController: UIViewController, CustomTabBarDelegate, ShowPlusButtonDe
         }
     }
     
-    @objc func focusTimePickerValueChanged(){
-        let totalTime = Int(focusTimePicker.countDownDuration)
-        viewModel.timerModel.totalTime = totalTime
+    @objc func focusTimePickerValueChanged(_ sender: UIDatePicker){
+        let totalTime = sender.countDownDuration
+        viewModel.timerModel.totalTime = Int(totalTime)
         viewModel.resetTimer(time: viewModel.timerModel.totalTime)
+        VC1.startButton.setImage(UIImage(systemName: "play.fill"), for: .normal)
+        VC1.isShowStopButton = false
         VC1.focusTimePicker.countDownDuration = TimeInterval(viewModel.timerModel.totalTime)
-        VC1.timerLabel.text = String(format: "%02d:%02d:%02d", viewModel.timerModel.totalTime / 3600, (viewModel.timerModel.totalTime % 3600) / 60, viewModel.timerModel.totalTime % 60)
+        VC1.focusTimerLabel.text = String(format: "%02d:%02d:%02d", viewModel.timerModel.totalTime / 3600, (viewModel.timerModel.totalTime % 3600) / 60, viewModel.timerModel.totalTime % 60)
     }
     
-    @objc func breakTimePickerValueChanged(){
-        
+    @objc func breakTimePickerValueChanged(_ sender: UIDatePicker){
+        let totalTime = sender.countDownDuration
+        viewModel.timerModel.totalTime = Int(totalTime)
+        viewModel.resetTimer(time: viewModel.timerModel.totalTime)
+        VC1.startButton.setImage(UIImage(systemName: "play.fill"), for: .normal)
+        VC1.isShowStopButton = false
+        VC1.breakTimePicker.countDownDuration = TimeInterval(viewModel.timerModel.totalTime)
+        VC1.breakTimerLabel.text = String(format: "%02d:%02d:%02d", viewModel.timerModel.totalTime / 3600, (viewModel.timerModel.totalTime % 3600) / 60, viewModel.timerModel.totalTime % 60)
     }
     
     private func setupVC1(){
         VC1.focusTimePicker = self.focusTimePicker
+        VC1.breakTimePicker = self.breakTimePicker
         VC1.viewModel = viewModel
+
         viewModel.onTimerUpdate = { [weak self] totalTime in
-            self?.VC1.timerLabel.text = String(format: "%02d:%02d:%02d", totalTime / 3600, (totalTime % 3600) / 60, totalTime % 60)
+            if self?.VC1.segmentedController.selectedSegmentIndex == 0 {
+                self?.VC1.focusTimerLabel.text = String(format: "%02d:%02d:%02d", totalTime / 3600, (totalTime % 3600) / 60, totalTime % 60)
+            } else if self?.VC1.segmentedController.selectedSegmentIndex == 1 {
+                self?.VC1.breakTimerLabel.text = String(format: "%02d:%02d:%02d", totalTime / 3600, (totalTime % 3600) / 60, totalTime % 60)
+            }
         }
     }
-    
 }
 
 #Preview {

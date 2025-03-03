@@ -69,7 +69,7 @@ class MainTabbarView: UIView {
         return button
     }()
     
-    private var isShowPlusButton: Bool = false
+    var isShowPlusButton: Bool = false
     private var selectedIndex: Int = 0
     
     override init(frame: CGRect) {
