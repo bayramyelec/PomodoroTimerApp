@@ -276,6 +276,7 @@ class TabbarController: UIViewController, CustomTabBarDelegate, ShowPlusButtonDe
         VC1.focusTimePicker.countDownDuration = TimeInterval(viewModel.timerModel.totalTime)
         VC1.focusTimerLabel.text = String(format: "%02d:%02d:%02d", viewModel.timerModel.totalTime / 3600, (viewModel.timerModel.totalTime % 3600) / 60, viewModel.timerModel.totalTime % 60)
         VC1.segmentedController.selectedSegmentIndex = 0
+        VC1.timerButtonStackView.isHidden = false
     }
     
     @objc func breakTimePickerValueChanged(_ sender: UIDatePicker){
@@ -287,13 +288,14 @@ class TabbarController: UIViewController, CustomTabBarDelegate, ShowPlusButtonDe
         VC1.breakTimePicker.countDownDuration = TimeInterval(viewModel.timerModel.totalTime)
         VC1.breakTimerLabel.text = String(format: "%02d:%02d:%02d", viewModel.timerModel.totalTime / 3600, (viewModel.timerModel.totalTime % 3600) / 60, viewModel.timerModel.totalTime % 60)
         VC1.segmentedController.selectedSegmentIndex = 1
+        VC1.timerButtonStackView.isHidden = true
     }
     
     private func setupVC1(){
         VC1.focusTimePicker = self.focusTimePicker
         VC1.breakTimePicker = self.breakTimePicker
         VC1.viewModel = viewModel
-
+        
         viewModel.onTimerUpdate = { [weak self] totalTime in
             if self?.VC1.segmentedController.selectedSegmentIndex == 0 {
                 self?.VC1.focusTimerLabel.text = String(format: "%02d:%02d:%02d", totalTime / 3600, (totalTime % 3600) / 60, totalTime % 60)
@@ -301,9 +303,13 @@ class TabbarController: UIViewController, CustomTabBarDelegate, ShowPlusButtonDe
                 self?.VC1.breakTimerLabel.text = String(format: "%02d:%02d:%02d", totalTime / 3600, (totalTime % 3600) / 60, totalTime % 60)
             }
         }
+        
+        viewModel.onTimerFinish = { [weak self] in
+            DispatchQueue.main.async {
+                self?.VC1.segmentedController.selectedSegmentIndex = 1
+                self?.VC1.segmentedControlValueChanged()
+                self?.viewModel.startTimer(totalTime: Int(self?.VC1.breakTimePicker.countDownDuration ?? 0))
+            }
+        }
     }
-}
-
-#Preview {
-    TabbarController()
 }

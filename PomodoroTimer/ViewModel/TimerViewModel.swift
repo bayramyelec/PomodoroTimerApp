@@ -20,7 +20,6 @@ class TimerViewModel {
     func startTimer(totalTime: Int) {
         guard !timerModel.isRunning else { return }
         
-        
         if timerModel.isBreak {
             if focusRemainingTime > 0 {
                 timerModel.totalTime = focusRemainingTime
@@ -40,7 +39,6 @@ class TimerViewModel {
                     }
                 } else {
                     self.stopTimer()
-                    self.onTimerFinish?()
                 }
             }
         } else {

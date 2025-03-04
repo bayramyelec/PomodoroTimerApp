@@ -103,7 +103,7 @@ class CustomBackView: UIView {
         if isShowStopButton {
             startButton.setImage(UIImage(systemName: "pause.fill"), for: .normal)
             let selectedTime = Int(focusTimePicker.countDownDuration)
-            viewModel.startTimer(totalTime: selectedTime)
+//            viewModel.startTimer(totalTime: selectedTime, selectedIndex: segmentedController.selectedSegmentIndex)
         } else {
             startButton.setImage(UIImage(systemName: "play.fill"), for: .normal)
             viewModel.stopTimer()

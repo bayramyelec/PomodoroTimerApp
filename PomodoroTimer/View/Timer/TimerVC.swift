@@ -55,12 +55,13 @@ class TimerVC: UIViewController {
         return label
     }()
     
-    private let timerButtonStackView: UIStackView = {
+    let timerButtonStackView: UIStackView = {
         let stackView = UIStackView()
         stackView.axis = .horizontal
         stackView.distribution = .fill
         stackView.spacing = 10
         stackView.translatesAutoresizingMaskIntoConstraints = false
+        stackView.isHidden = false
         return stackView
     }()
     
@@ -85,13 +86,20 @@ class TimerVC: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        view.backgroundColor = .white
         setupUI()
         viewModel.onTimerUpdate = { [weak self] totalTime in
             if self?.segmentedController.selectedSegmentIndex == 0 {
                 self?.focusTimerLabel.text = String(format: "%02d:%02d:%02d", totalTime / 3600, (totalTime % 3600) / 60, totalTime % 60)
             } else if self?.segmentedController.selectedSegmentIndex == 1 {
                 self?.breakTimerLabel.text = String(format: "%02d:%02d:%02d", totalTime / 3600, (totalTime % 3600) / 60, totalTime % 60)
+            }
+        }
+        
+        viewModel.onTimerFinish = { [weak self] in
+            DispatchQueue.main.async {
+                self?.segmentedController.selectedSegmentIndex = 1
+                self?.segmentedControlValueChanged()
+                self?.viewModel.startTimer(totalTime: Int(self?.breakTimePicker.countDownDuration ?? 0))
             }
         }
     }
@@ -104,7 +112,6 @@ class TimerVC: UIViewController {
         headerBackView.addSubview(breakTimerLabel)
         view.addSubview(timerButtonStackView)
         [resetButton, startButton].forEach { timerButtonStackView.addArrangedSubview($0) }
-        
         
         NSLayoutConstraint.activate([
             segmentedController.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 20),
@@ -179,18 +186,15 @@ class TimerVC: UIViewController {
             self.viewModel.resetTimer(time: Int(focusTimePicker.countDownDuration))
             self.startButton.setImage(UIImage(systemName: "play.fill"), for: .normal)
             self.isShowStopButton = false
+            self.timerButtonStackView.isHidden = false
         } else if segmentedController.selectedSegmentIndex == 1 {
             self.focusTimerLabel.alpha = 0
             self.breakTimerLabel.alpha = 1
             self.viewModel.resetTimer(time: Int(breakTimePicker.countDownDuration))
             self.startButton.setImage(UIImage(systemName: "play.fill"), for: .normal)
             self.isShowStopButton = false
+            self.timerButtonStackView.isHidden = true
         }
     }
     
-}
-
-
-#Preview {
-    TimerVC()
 }
