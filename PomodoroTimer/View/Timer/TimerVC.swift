@@ -82,6 +82,8 @@ class TimerVC: UIViewController {
         return button
     }()
     
+    private lazy var listTableView = ListTableView()
+    
     var isShowStopButton: Bool = false
     
     override func viewDidLoad() {
@@ -100,6 +102,9 @@ class TimerVC: UIViewController {
                 self?.segmentedController.selectedSegmentIndex = 1
                 self?.segmentedControlValueChanged()
                 self?.viewModel.startTimer(totalTime: Int(self?.breakTimePicker.countDownDuration ?? 0))
+                DispatchQueue.main.asyncAfter(deadline: .now() + (self?.breakTimePicker.countDownDuration ?? 0)) {
+                    self?.viewModel.stopTimer()
+                }
             }
         }
     }
@@ -112,6 +117,8 @@ class TimerVC: UIViewController {
         headerBackView.addSubview(breakTimerLabel)
         view.addSubview(timerButtonStackView)
         [resetButton, startButton].forEach { timerButtonStackView.addArrangedSubview($0) }
+        view.addSubview(listTableView)
+        listTableView.translatesAutoresizingMaskIntoConstraints = false
         
         NSLayoutConstraint.activate([
             segmentedController.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 20),
@@ -138,6 +145,11 @@ class TimerVC: UIViewController {
             
             resetButton.heightAnchor.constraint(equalToConstant: 50),
             resetButton.widthAnchor.constraint(equalToConstant: 60),
+            
+            listTableView.topAnchor.constraint(equalTo: timerButtonStackView.bottomAnchor, constant: 20),
+            listTableView.leftAnchor.constraint(equalTo: view.leftAnchor, constant: 10),
+            listTableView.rightAnchor.constraint(equalTo: view.rightAnchor, constant: -10),
+            listTableView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -100)
             
         ])
     }
@@ -176,7 +188,7 @@ class TimerVC: UIViewController {
             viewModel.resetTimer(time: Int(breakTimePicker.countDownDuration))
             startButton.setImage(UIImage(systemName: "play.fill"), for: .normal)
         }
-       
+        
     }
     
     @objc func segmentedControlValueChanged(){

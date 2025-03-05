@@ -16,7 +16,7 @@ class TimerViewModel {
     
     var onTimerUpdate: ((Int) -> Void)?
     var onTimerFinish: (() -> Void)?
-    
+        
     func startTimer(totalTime: Int) {
         guard !timerModel.isRunning else { return }
         

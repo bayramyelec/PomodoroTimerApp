@@ -281,12 +281,12 @@ class TabbarController: UIViewController, CustomTabBarDelegate, ShowPlusButtonDe
     
     @objc func breakTimePickerValueChanged(_ sender: UIDatePicker){
         let totalTime = sender.countDownDuration
+        VC1.breakTimerLabel.text = String(format: "%02d:%02d:%02d", viewModel.timerModel.totalTime / 3600, (viewModel.timerModel.totalTime % 3600) / 60, viewModel.timerModel.totalTime % 60)
         viewModel.timerModel.totalTime = Int(totalTime)
         viewModel.resetTimer(time: viewModel.timerModel.totalTime)
         VC1.startButton.setImage(UIImage(systemName: "play.fill"), for: .normal)
         VC1.isShowStopButton = false
         VC1.breakTimePicker.countDownDuration = TimeInterval(viewModel.timerModel.totalTime)
-        VC1.breakTimerLabel.text = String(format: "%02d:%02d:%02d", viewModel.timerModel.totalTime / 3600, (viewModel.timerModel.totalTime % 3600) / 60, viewModel.timerModel.totalTime % 60)
         VC1.segmentedController.selectedSegmentIndex = 1
         VC1.timerButtonStackView.isHidden = true
     }
@@ -309,6 +309,9 @@ class TabbarController: UIViewController, CustomTabBarDelegate, ShowPlusButtonDe
                 self?.VC1.segmentedController.selectedSegmentIndex = 1
                 self?.VC1.segmentedControlValueChanged()
                 self?.viewModel.startTimer(totalTime: Int(self?.VC1.breakTimePicker.countDownDuration ?? 0))
+                DispatchQueue.main.asyncAfter(deadline: .now() + (self?.breakTimePicker.countDownDuration ?? 0)) {
+                    self?.viewModel.stopTimer()
+                }
             }
         }
     }
