@@ -8,10 +8,15 @@
 import UIKit
 
 class ListTableView: UITableView, UITableViewDataSource, UITableViewDelegate {
-
+    
+    var viewModel = ListViewModel()
+    
     override init(frame: CGRect, style: UITableView.Style) {
         super.init(frame: frame, style: style)
         setup()
+        viewModel.reloadData = { [weak self] in
+            self?.reloadData()
+        }
     }
     
     required init?(coder: NSCoder) {
@@ -23,17 +28,17 @@ class ListTableView: UITableView, UITableViewDataSource, UITableViewDelegate {
         showsVerticalScrollIndicator = false
         delegate = self
         dataSource = self
-        register(UITableViewCell.self, forCellReuseIdentifier: "cell")
+        register(ListCell.self, forCellReuseIdentifier: ListCell.reuseIdentifier)
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return 10
+        return viewModel.items.count
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(withIdentifier: "cell", for: indexPath)
-        cell.textLabel?.text = "test"
-        cell.backgroundColor = .clear
+        let cell = tableView.dequeueReusableCell(withIdentifier: ListCell.reuseIdentifier, for: indexPath) as! ListCell
+        let item = viewModel.items[indexPath.row]
+        cell.configure(with: item)
         cell.selectionStyle = .none
         return cell
     }

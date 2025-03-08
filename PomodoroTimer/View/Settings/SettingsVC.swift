@@ -7,7 +7,7 @@
 
 import UIKit
 
-class ListVC: UIViewController {
+class SettingsVC: UIViewController {
     
     private lazy var tableView: UITableView = {
         let tableView = UITableView(frame: .zero, style: .plain)
@@ -42,7 +42,7 @@ class ListVC: UIViewController {
     
 }
 
-extension ListVC: UITableViewDelegate, UITableViewDataSource {
+extension SettingsVC: UITableViewDelegate, UITableViewDataSource {
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return 5
     }

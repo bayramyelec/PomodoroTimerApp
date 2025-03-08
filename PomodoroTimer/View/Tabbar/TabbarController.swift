@@ -16,7 +16,7 @@ class TabbarController: UIViewController, CustomTabBarDelegate, ShowPlusButtonDe
         let timerVC = TimerVC()
         return timerVC
     }()
-    private let VC2 = UINavigationController(rootViewController: ListVC())
+    private let VC2 = UINavigationController(rootViewController: SettingsVC())
     
     private var currentVC: UIViewController?
     
