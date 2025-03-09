@@ -18,7 +18,14 @@ final class TimerViewModel {
     var onTimerFinish: (() -> Void)?
         
     func startTimer(totalTime: Int) {
-        guard !timerModel.isRunning else { return }
+        guard totalTime > 0 else {
+            print("Error: totalTime must be greater than 0")
+            return
+        }
+        guard !timerModel.isRunning else {
+            print("Timer is already running")
+            return
+        }
         
         if timerModel.isBreak {
             timerModel.totalTime = breakRemainingTime > 0 ? breakRemainingTime : totalTime
@@ -27,9 +34,11 @@ final class TimerViewModel {
         }
         
         timerModel.isRunning = true
+        print("Timer started with totalTime: \(timerModel.totalTime)")
         
         timer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { [weak self] _ in
             guard let self = self else { return }
+            print("Timer tick: \(self.timerModel.totalTime) seconds remaining")
             if self.timerModel.totalTime > 0 {
                 self.timerModel.totalTime -= 1
                 if self.timerModel.isBreak {
@@ -41,9 +50,10 @@ final class TimerViewModel {
                     self.onTimerUpdate?(self.timerModel.totalTime)
                 }
             } else {
+                print("Timer finished!")
                 self.stopTimer()
                 DispatchQueue.main.async {
-                    self.onTimerFinish?() // Her iki timer bittiğinde çağrılır
+                    self.onTimerFinish?()
                 }
             }
         }

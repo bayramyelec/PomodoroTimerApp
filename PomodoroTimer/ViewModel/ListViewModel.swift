@@ -20,6 +20,7 @@ final class ListViewModel {
     func addItem(focusTime: Int, breakTime: Int, date: Date) {
         let newItem = ListModel(focusTime: focusTime, breakTime: breakTime, date: date)
         items.append(newItem)
+        print("Item added, new count: \(items.count)")
         reloadData?()
     }
     

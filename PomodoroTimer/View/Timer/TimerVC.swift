@@ -90,17 +90,21 @@ class TimerVC: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         setupUI()
+        
         listTableView.viewModel = listViewModel
+        
         viewModel.onTimerUpdate = { [weak self] totalTime in
+            print("Timer updated: \(totalTime) seconds remaining")
             if self?.segmentedController.selectedSegmentIndex == 0 {
                 self?.focusTimerLabel.text = String(format: "%02d:%02d:%02d", totalTime / 3600, (totalTime % 3600) / 60, totalTime % 60)
             } else if self?.segmentedController.selectedSegmentIndex == 1 {
                 self?.breakTimerLabel.text = String(format: "%02d:%02d:%02d", totalTime / 3600, (totalTime % 3600) / 60, totalTime % 60)
             }
         }
-        
+
         viewModel.onTimerFinish = { [weak self] in
             guard let self = self else { return }
+            print("onTimerFinish triggered")
             
             DispatchQueue.main.async {
                 print("Timer finished, isBreak: \(self.viewModel.timerModel.isBreak)")
@@ -115,6 +119,7 @@ class TimerVC: UIViewController {
                     print("Adding item: focusTime=\(focusTime), breakTime=\(breakTime)")
                     self.listViewModel.addItem(focusTime: focusTime, breakTime: breakTime, date: Date())
                     self.listTableView.reloadData()
+                    print("Table reloaded, items count: \(self.listViewModel.items.count)")
                 } else {
                     print("Focus finished, switching to Break")
                     self.segmentedController.selectedSegmentIndex = 1
@@ -177,15 +182,18 @@ class TimerVC: UIViewController {
     
     @objc func startButtonTapped() {
         isShowStopButton.toggle()
+        print("Start button tapped, isShowStopButton: \(isShowStopButton)")
         
         if segmentedController.selectedSegmentIndex == 0 {
             viewModel.setBreakMode(false)
             if isShowStopButton {
                 startButton.setImage(UIImage(systemName: "pause.fill"), for: .normal)
                 let selectedTime = Int(focusTimePicker.countDownDuration)
+                print("Starting Focus timer with \(selectedTime) seconds")
                 viewModel.startTimer(totalTime: selectedTime)
             } else {
                 startButton.setImage(UIImage(systemName: "play.fill"), for: .normal)
+                print("Stopping Focus timer")
                 viewModel.stopTimer()
             }
         } else if segmentedController.selectedSegmentIndex == 1 {
@@ -193,9 +201,11 @@ class TimerVC: UIViewController {
             if isShowStopButton {
                 startButton.setImage(UIImage(systemName: "pause.fill"), for: .normal)
                 let selectedTime = Int(breakTimePicker.countDownDuration)
+                print("Starting Break timer with \(selectedTime) seconds")
                 viewModel.startTimer(totalTime: selectedTime)
             } else {
                 startButton.setImage(UIImage(systemName: "play.fill"), for: .normal)
+                print("Stopping Break timer")
                 viewModel.stopTimer()
             }
         }
