@@ -9,8 +9,9 @@ import UIKit
 
 class TimerVC: UIViewController {
     
-    var viewModel = TimerViewModel()
-    var listViewModel = ListViewModel()
+    var viewModel: TimerViewModel
+    var listViewModel: ListViewModel
+    var listTableView: ListTableView!
     
     var focusTimePicker: UIDatePicker!
     var breakTimePicker: UIDatePicker!
@@ -62,7 +63,6 @@ class TimerVC: UIViewController {
         stackView.distribution = .fill
         stackView.spacing = 10
         stackView.translatesAutoresizingMaskIntoConstraints = false
-        stackView.isHidden = false
         return stackView
     }()
     
@@ -83,15 +83,32 @@ class TimerVC: UIViewController {
         return button
     }()
     
-    private lazy var listTableView = ListTableView()
+    private let listImage: UIImageView = {
+        let imageView = UIImageView()
+        imageView.image = UIImage(named: "mainImage")
+        imageView.contentMode = .scaleAspectFill
+        imageView.layer.cornerRadius = 20
+        imageView.clipsToBounds = true
+        imageView.translatesAutoresizingMaskIntoConstraints = false
+        return imageView
+    }()
+    
     
     var isShowStopButton: Bool = false
+    
+    init(viewModel: TimerViewModel, listViewModel: ListViewModel) {
+        self.viewModel = viewModel
+        self.listViewModel = listViewModel
+        super.init(nibName: nil, bundle: nil)
+    }
+    
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
     
     override func viewDidLoad() {
         super.viewDidLoad()
         setupUI()
-        
-        listTableView.viewModel = listViewModel
         
         viewModel.onTimerUpdate = { [weak self] totalTime in
             print("Timer updated: \(totalTime) seconds remaining")
@@ -101,27 +118,22 @@ class TimerVC: UIViewController {
                 self?.breakTimerLabel.text = String(format: "%02d:%02d:%02d", totalTime / 3600, (totalTime % 3600) / 60, totalTime % 60)
             }
         }
-
+        
         viewModel.onTimerFinish = { [weak self] in
             guard let self = self else { return }
-            print("onTimerFinish triggered")
             
             DispatchQueue.main.async {
-                print("Timer finished, isBreak: \(self.viewModel.timerModel.isBreak)")
                 if self.viewModel.timerModel.isBreak {
-                    print("Break finished, switching to Focus")
                     self.segmentedController.selectedSegmentIndex = 0
                     self.viewModel.setBreakMode(false)
                     self.segmentedControlValueChanged()
                     
                     let focusTime = Int(self.focusTimePicker.countDownDuration)
                     let breakTime = Int(self.breakTimePicker.countDownDuration)
-                    print("Adding item: focusTime=\(focusTime), breakTime=\(breakTime)")
+                    print("Adding item - Focus: \(focusTime), Break: \(breakTime)")
                     self.listViewModel.addItem(focusTime: focusTime, breakTime: breakTime, date: Date())
-                    self.listTableView.reloadData()
-                    print("Table reloaded, items count: \(self.listViewModel.items.count)")
+                    print("Items after adding: \(self.listViewModel.items.count)")
                 } else {
-                    print("Focus finished, switching to Break")
                     self.segmentedController.selectedSegmentIndex = 1
                     self.viewModel.setBreakMode(true)
                     self.segmentedControlValueChanged()
@@ -132,11 +144,23 @@ class TimerVC: UIViewController {
         }
         
         listViewModel.reloadData = { [weak self] in
-            self?.listTableView.reloadData()
+            DispatchQueue.main.async {
+                self?.listTableView.reloadData()
+                self?.updateListImageVisibility()
+            }
         }
+        
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        updateListImageVisibility()
     }
     
     func setupUI() {
+        
+        listTableView = ListTableView(frame: .zero, style: .plain, viewModel: listViewModel)
+        
         view.backgroundColor = UIColor.back
         view.addSubview(segmentedController)
         view.addSubview(headerBackView)
@@ -144,6 +168,7 @@ class TimerVC: UIViewController {
         headerBackView.addSubview(breakTimerLabel)
         view.addSubview(timerButtonStackView)
         [resetButton, startButton].forEach { timerButtonStackView.addArrangedSubview($0) }
+        view.addSubview(listImage)
         view.addSubview(listTableView)
         listTableView.translatesAutoresizingMaskIntoConstraints = false
         
@@ -173,11 +198,20 @@ class TimerVC: UIViewController {
             resetButton.heightAnchor.constraint(equalToConstant: 50),
             resetButton.widthAnchor.constraint(equalToConstant: 60),
             
+            listImage.topAnchor.constraint(equalTo: timerButtonStackView.bottomAnchor, constant: 20),
+            listImage.leftAnchor.constraint(equalTo: view.leftAnchor, constant: 30),
+            listImage.rightAnchor.constraint(equalTo: view.rightAnchor, constant: -30),
+            listImage.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -100),
+            
             listTableView.topAnchor.constraint(equalTo: timerButtonStackView.bottomAnchor, constant: 20),
             listTableView.leftAnchor.constraint(equalTo: view.leftAnchor, constant: 10),
             listTableView.rightAnchor.constraint(equalTo: view.rightAnchor, constant: -10),
             listTableView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -100)
         ])
+    }
+    
+    func updateListImageVisibility() {
+        listImage.isHidden = !listViewModel.items.isEmpty
     }
     
     @objc func startButtonTapped() {
@@ -225,21 +259,23 @@ class TimerVC: UIViewController {
     
     @objc func segmentedControlValueChanged() {
         if segmentedController.selectedSegmentIndex == 0 {
-            self.focusTimerLabel.alpha = 1
-            self.breakTimerLabel.alpha = 0
-            self.viewModel.setBreakMode(false)
-            self.viewModel.resetTimer(time: Int(focusTimePicker.countDownDuration))
-            self.startButton.setImage(UIImage(systemName: "play.fill"), for: .normal)
-            self.isShowStopButton = false
-            self.timerButtonStackView.isHidden = false
+            focusTimerLabel.alpha = 1
+            breakTimerLabel.alpha = 0
+            viewModel.setBreakMode(false)
+            viewModel.resetTimer(time: Int(focusTimePicker.countDownDuration))
+            startButton.setImage(UIImage(systemName: "play.fill"), for: .normal)
+            isShowStopButton = false
+            startButton.isEnabled = true
+            resetButton.isEnabled = true
         } else if segmentedController.selectedSegmentIndex == 1 {
-            self.focusTimerLabel.alpha = 0
-            self.breakTimerLabel.alpha = 1
-            self.viewModel.setBreakMode(true)
-            self.viewModel.resetTimer(time: Int(breakTimePicker.countDownDuration))
-            self.startButton.setImage(UIImage(systemName: "play.fill"), for: .normal)
-            self.isShowStopButton = false
-            self.timerButtonStackView.isHidden = true
+            focusTimerLabel.alpha = 0
+            breakTimerLabel.alpha = 1
+            viewModel.setBreakMode(true)
+            viewModel.resetTimer(time: Int(breakTimePicker.countDownDuration))
+            startButton.setImage(UIImage(systemName: "play.fill"), for: .normal)
+            isShowStopButton = false
+            startButton.isEnabled = false
+            resetButton.isEnabled = false
         }
     }
 }

@@ -9,7 +9,7 @@ import Foundation
 
 final class ListViewModel {
     
-    var items: [ListModel] = [ListModel(focusTime: 1500, breakTime: 60, date: Date())] {
+    var items: [ListModel] = [ListModel(focusTime: 1500, breakTime: 60, date: Date()), ListModel(focusTime: 1500, breakTime: 60, date: Date())] {
         didSet {
             reloadData?()
         }
@@ -34,3 +34,4 @@ final class ListViewModel {
     }
     
 }
+

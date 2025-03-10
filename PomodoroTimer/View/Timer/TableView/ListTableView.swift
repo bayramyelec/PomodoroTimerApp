@@ -9,26 +9,23 @@ import UIKit
 
 class ListTableView: UITableView, UITableViewDataSource, UITableViewDelegate {
     
-    var viewModel = ListViewModel()
+    private let viewModel: ListViewModel
     
-    override init(frame: CGRect, style: UITableView.Style) {
+    init(frame: CGRect, style: UITableView.Style, viewModel: ListViewModel) {
+        self.viewModel = viewModel
         super.init(frame: frame, style: style)
-        setup()
-        viewModel.reloadData = { [weak self] in
-            self?.reloadData()
-        }
+        setupTableView()
     }
     
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
     
-    private func setup(){
-        backgroundColor = .clear
-        showsVerticalScrollIndicator = false
-        delegate = self
-        dataSource = self
-        register(ListCell.self, forCellReuseIdentifier: ListCell.reuseIdentifier)
+    private func setupTableView() {
+        self.backgroundColor = .clear
+        self.dataSource = self
+        self.delegate = self
+        self.register(ListCell.self, forCellReuseIdentifier: ListCell.reuseIdentifier)
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
@@ -36,11 +33,23 @@ class ListTableView: UITableView, UITableViewDataSource, UITableViewDelegate {
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(withIdentifier: ListCell.reuseIdentifier, for: indexPath) as! ListCell
+        let cell = dequeueReusableCell(withIdentifier: ListCell.reuseIdentifier, for: indexPath) as! ListCell
         let item = viewModel.items[indexPath.row]
         cell.configure(with: item)
         cell.selectionStyle = .none
         return cell
+    }
+    
+    func tableView(_ tableView: UITableView, trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
+        let deleteAction = UIContextualAction(style: .destructive, title: nil) { (action, view, completionHandler) in
+            self.viewModel.removeItem(at: indexPath.row)
+            tableView.deleteRows(at: [indexPath], with: .fade)
+            completionHandler(true)
+        }
+        deleteAction.image = UIImage(systemName: "trash.fill")?.withTintColor(.black, renderingMode: .alwaysOriginal)
+        deleteAction.backgroundColor = .back
+        let configuration = UISwipeActionsConfiguration(actions: [deleteAction])
+        return configuration
     }
     
 }

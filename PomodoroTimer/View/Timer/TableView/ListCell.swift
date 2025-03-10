@@ -11,6 +11,15 @@ class ListCell: UITableViewCell {
     
     static let reuseIdentifier = "ListCell"
     
+    private lazy var backView: UIView = {
+        let view = UIView()
+        view.backgroundColor = .black
+        view.layer.cornerRadius = 8
+        view.clipsToBounds = true
+        view.translatesAutoresizingMaskIntoConstraints = false
+        return view
+    }()
+    
     private lazy var focusLabel: UILabel = {
         let label = UILabel()
         label.textColor = .systemYellow.withAlphaComponent(0.5)
@@ -45,23 +54,33 @@ class ListCell: UITableViewCell {
     }
     
     private func setupUI() {
-        self.backgroundColor = .black
-        self.layer.cornerRadius = 8
-        self.clipsToBounds = true
-        self.addSubview(focusLabel)
-        self.addSubview(breakLabel)
-        self.addSubview(dateLabel)
+        self.backgroundColor = .clear
+        self.contentView.addSubview(backView)
+        backView.addSubview(focusLabel)
+        backView.addSubview(breakLabel)
+        backView.addSubview(dateLabel)
+        
+        let topConstraint = backView.topAnchor.constraint(greaterThanOrEqualTo: self.contentView.topAnchor, constant: 5)
+        topConstraint.priority = .defaultLow
+        
+        let bottomConstraint = backView.bottomAnchor.constraint(lessThanOrEqualTo: self.contentView.bottomAnchor, constant: -5)
+        bottomConstraint.priority = .defaultLow
         
         NSLayoutConstraint.activate([
-            focusLabel.topAnchor.constraint(equalTo: self.topAnchor, constant: 8),
-            focusLabel.leftAnchor.constraint(equalTo: self.leftAnchor, constant: 8),
+            topConstraint,
+            bottomConstraint,
+            backView.leadingAnchor.constraint(equalTo: self.contentView.leadingAnchor, constant: 5),
+            backView.rightAnchor.constraint(equalTo: self.contentView.rightAnchor, constant: -5),
             
-            breakLabel.topAnchor.constraint(equalTo: self.focusLabel.bottomAnchor, constant: 4),
-            breakLabel.leftAnchor.constraint(equalTo: self.leftAnchor, constant: 8),
-            breakLabel.bottomAnchor.constraint(equalTo: self.bottomAnchor, constant: -8),
+            focusLabel.topAnchor.constraint(equalTo: backView.topAnchor, constant: 8),
+            focusLabel.leftAnchor.constraint(equalTo: backView.leftAnchor, constant: 8),
             
-            dateLabel.rightAnchor.constraint(equalTo: self.rightAnchor, constant: -8),
-            dateLabel.bottomAnchor.constraint(equalTo: self.bottomAnchor, constant: -8)
+            breakLabel.topAnchor.constraint(greaterThanOrEqualTo: self.focusLabel.bottomAnchor, constant: 4),
+            breakLabel.leftAnchor.constraint(equalTo: backView.leftAnchor, constant: 8),
+            breakLabel.bottomAnchor.constraint(lessThanOrEqualTo: backView.bottomAnchor, constant: -8),
+            
+            dateLabel.rightAnchor.constraint(equalTo: backView.rightAnchor, constant: -8),
+            dateLabel.bottomAnchor.constraint(equalTo: backView.bottomAnchor, constant: -8)
         ])
     }
     
@@ -76,5 +95,4 @@ class ListCell: UITableViewCell {
         formatter.dateFormat = "yyyy-MM-dd"
         return formatter
     }
-    
 }

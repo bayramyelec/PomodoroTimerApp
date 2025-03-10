@@ -34,11 +34,9 @@ final class TimerViewModel {
         }
         
         timerModel.isRunning = true
-        print("Timer started with totalTime: \(timerModel.totalTime)")
         
         timer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { [weak self] _ in
             guard let self = self else { return }
-            print("Timer tick: \(self.timerModel.totalTime) seconds remaining")
             if self.timerModel.totalTime > 0 {
                 self.timerModel.totalTime -= 1
                 if self.timerModel.isBreak {
@@ -50,7 +48,6 @@ final class TimerViewModel {
                     self.onTimerUpdate?(self.timerModel.totalTime)
                 }
             } else {
-                print("Timer finished!")
                 self.stopTimer()
                 DispatchQueue.main.async {
                     self.onTimerFinish?()

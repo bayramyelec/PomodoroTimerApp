@@ -11,11 +11,13 @@ class TabbarController: UIViewController, CustomTabBarDelegate, ShowPlusButtonDe
     
     let tabbar = MainTabbarView()
     var viewModel = TimerViewModel()
+    var listViewModel = ListViewModel()
     
-    private let VC1: TimerVC = {
-        let timerVC = TimerVC()
+    private lazy var VC1: TimerVC = {
+        let timerVC = TimerVC(viewModel: viewModel, listViewModel: listViewModel)
         return timerVC
     }()
+    
     private let VC2 = UINavigationController(rootViewController: SettingsVC())
     
     private var currentVC: UIViewController?
@@ -294,7 +296,9 @@ class TabbarController: UIViewController, CustomTabBarDelegate, ShowPlusButtonDe
     private func setupVC1(){
         VC1.focusTimePicker = self.focusTimePicker
         VC1.breakTimePicker = self.breakTimePicker
+        
         VC1.viewModel = viewModel
+        VC1.listViewModel = listViewModel
         
         viewModel.onTimerUpdate = { [weak self] totalTime in
             if self?.VC1.segmentedController.selectedSegmentIndex == 0 {
@@ -305,13 +309,33 @@ class TabbarController: UIViewController, CustomTabBarDelegate, ShowPlusButtonDe
         }
         
         viewModel.onTimerFinish = { [weak self] in
+            guard let self = self else { return }
+            
             DispatchQueue.main.async {
-                self?.VC1.segmentedController.selectedSegmentIndex = 1
-                self?.VC1.segmentedControlValueChanged()
-                self?.viewModel.startTimer(totalTime: Int(self?.VC1.breakTimePicker.countDownDuration ?? 0))
-                DispatchQueue.main.asyncAfter(deadline: .now() + (self?.breakTimePicker.countDownDuration ?? 0)) {
-                    self?.viewModel.stopTimer()
+                if self.viewModel.timerModel.isBreak {
+                    self.VC1.segmentedController.selectedSegmentIndex = 0
+                    self.viewModel.setBreakMode(false)
+                    self.VC1.segmentedControlValueChanged()
+                    
+                    let focusTime = Int(self.focusTimePicker.countDownDuration)
+                    let breakTime = Int(self.breakTimePicker.countDownDuration)
+                    print("Adding item - Focus: \(focusTime), Break: \(breakTime)")
+                    self.VC1.listViewModel.addItem(focusTime: focusTime, breakTime: breakTime, date: Date())
+                    print("Items after adding: \(self.listViewModel.items.count)")
+                } else {
+                    self.VC1.segmentedController.selectedSegmentIndex = 1
+                    self.viewModel.setBreakMode(true)
+                    self.VC1.segmentedControlValueChanged()
+                    let breakTime = Int(self.breakTimePicker.countDownDuration)
+                    self.viewModel.startTimer(totalTime: breakTime)
                 }
+            }
+        }
+        
+        VC1.listViewModel.reloadData = { [weak self] in
+            DispatchQueue.main.async {
+                self?.VC1.listTableView.reloadData()
+                self?.VC1.updateListImageVisibility()
             }
         }
     }
