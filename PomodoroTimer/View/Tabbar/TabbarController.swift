@@ -6,6 +6,7 @@
 //
 
 import UIKit
+import UserNotifications
 
 class TabbarController: UIViewController, CustomTabBarDelegate, ShowPlusButtonDelegate {
     
@@ -104,6 +105,18 @@ class TabbarController: UIViewController, CustomTabBarDelegate, ShowPlusButtonDe
         super.viewDidLoad()
         setup()
         setupVC1()
+        requestNotificationPermission()
+    }
+    
+    func requestNotificationPermission() {
+        let center = UNUserNotificationCenter.current()
+        center.requestAuthorization(options: [.alert, .sound]) { granted, error in
+            if let error = error {
+                print("Bildirim izni hatası: \(error)")
+            } else {
+                print("Bildirim izni: \(granted)")
+            }
+        }
     }
     
     private func setup(){
@@ -319,15 +332,21 @@ class TabbarController: UIViewController, CustomTabBarDelegate, ShowPlusButtonDe
                     
                     let focusTime = Int(self.focusTimePicker.countDownDuration)
                     let breakTime = Int(self.breakTimePicker.countDownDuration)
-                    print("Adding item - Focus: \(focusTime), Break: \(breakTime)")
                     self.VC1.listViewModel.addItem(focusTime: focusTime, breakTime: breakTime, date: Date())
-                    print("Items after adding: \(self.listViewModel.items.count)")
+                    
+                    if let selectedSound = UserDefaults.standard.string(forKey: "selectedSound") {
+                        NotificationHelper.sendNotification(title: "Break Time Over", body: "Now it's time to focus!", sound: selectedSound)
+                    }
                 } else {
                     self.VC1.segmentedController.selectedSegmentIndex = 1
                     self.viewModel.setBreakMode(true)
                     self.VC1.segmentedControlValueChanged()
                     let breakTime = Int(self.breakTimePicker.countDownDuration)
                     self.viewModel.startTimer(totalTime: breakTime)
+                    
+                    if let selectedSound = UserDefaults.standard.string(forKey: "selectedSound") {
+                        NotificationHelper.sendNotification(title: "Focus Time Over", body: "Time for a break!", sound: selectedSound)
+                    }
                 }
             }
         }

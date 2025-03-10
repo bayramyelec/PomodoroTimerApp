@@ -22,6 +22,8 @@ class SettingsVC: UIViewController {
     
     private var settings: [SettingsSection] = []
     
+    var selectedSound: String = "defaultSound"
+    
     private lazy var tableView: UITableView = {
         let tableView = UITableView(frame: .zero, style: .plain)
         tableView.translatesAutoresizingMaskIntoConstraints = false
@@ -72,18 +74,18 @@ class SettingsVC: UIViewController {
     private func configureSettingsSections() {
         settings = [
             SettingsSection(header: "Notification Settings", items: [
-                SettingItem(title: "Notification", icon: UIImage(named: "bell.fill"), action: {
-                    
+                SettingItem(title: "Notification", icon: UIImage(systemName: "bell.fill"), action: {
+                    self.chooseNotificationSound()
                 })
             ]),
             SettingsSection(header: "Other", items: [
                 SettingItem(title: "Instagram", icon: UIImage(systemName: "camera.viewfinder"), action: {
                     
                 }),
-                SettingItem(title: "LinkedIn", icon: UIImage(systemName: "bell.fill"), action: {
+                SettingItem(title: "LinkedIn", icon: UIImage(systemName: "l.square.fill"), action: {
                     
                 }),
-                SettingItem(title: "Github", icon: UIImage(systemName: "bell.fill"), action: {
+                SettingItem(title: "Github", icon: UIImage(systemName: "g.square.fill"), action: {
                     
                 }),
                 SettingItem(title: "X", icon: UIImage(systemName: "x.square.fill"), action: {
@@ -92,6 +94,24 @@ class SettingsVC: UIViewController {
             ])
         ]
     }
+    
+    private func chooseNotificationSound() {
+        let alert = UIAlertController(title: "Choose Notification Sound", message: "Select a sound for notifications", preferredStyle: .actionSheet)
+        
+        let soundOptions = ["Default", "Bell", "Chime"]
+        
+        for sound in soundOptions {
+            alert.addAction(UIAlertAction(title: sound, style: .default, handler: { [weak self] action in
+                self?.selectedSound = sound.lowercased()
+                UserDefaults.standard.set(sound.lowercased(), forKey: "selectedSound")
+            }))
+        }
+        
+        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil))
+        
+        present(alert, animated: true, completion: nil)
+    }
+
     
 }
 
@@ -122,9 +142,9 @@ extension SettingsVC: UITableViewDelegate, UITableViewDataSource {
         
         return headerView
     }
-
+    
     func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
-        return 40 // Header yüksekliğini sabitle
+        return 40
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {

@@ -130,15 +130,22 @@ class TimerVC: UIViewController {
                     
                     let focusTime = Int(self.focusTimePicker.countDownDuration)
                     let breakTime = Int(self.breakTimePicker.countDownDuration)
-                    print("Adding item - Focus: \(focusTime), Break: \(breakTime)")
                     self.listViewModel.addItem(focusTime: focusTime, breakTime: breakTime, date: Date())
-                    print("Items after adding: \(self.listViewModel.items.count)")
+                    
+                    if let selectedSound = UserDefaults.standard.string(forKey: "selectedSound") {
+                        NotificationHelper.sendNotification(title: "Break Time Over", body: "Now it's time to focus!", sound: selectedSound)
+                    }
+                    
                 } else {
                     self.segmentedController.selectedSegmentIndex = 1
                     self.viewModel.setBreakMode(true)
                     self.segmentedControlValueChanged()
                     let breakTime = Int(self.breakTimePicker.countDownDuration)
                     self.viewModel.startTimer(totalTime: breakTime)
+                    
+                    if let selectedSound = UserDefaults.standard.string(forKey: "selectedSound") {
+                        NotificationHelper.sendNotification(title: "Focus Time Over", body: "Time for a break!", sound: selectedSound)
+                    }
                 }
             }
         }
@@ -150,7 +157,10 @@ class TimerVC: UIViewController {
             }
         }
         
+        UNUserNotificationCenter.current().delegate = self
+        
     }
+    
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
@@ -277,5 +287,12 @@ class TimerVC: UIViewController {
             startButton.isEnabled = false
             resetButton.isEnabled = false
         }
+    }
+    
+}
+
+extension TimerVC: UNUserNotificationCenterDelegate {
+    func userNotificationCenter(_ center: UNUserNotificationCenter, willPresent notification: UNNotification, withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
+        completionHandler([.banner, .sound])
     }
 }
